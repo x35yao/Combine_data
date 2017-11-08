@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 labview_file = "706685-2017-11-05-12-28-52.txt-preprocessed-transformed"
 gripper_file = "706685-2017-11-05-12-28-Servo-displacement-preprocessed"
+final_file = "706685-2017-11-05-12-28-final"
 
 class combine:
 
@@ -29,7 +30,7 @@ class combine:
 
     def merge_data(self):
 
-        clock_diff = int(self.servo_lines[0])   #Positive means the gripper is behind ndi
+        clock_diff = int(self.servo_lines[0])   #Positive means the gripper clock is behind ndi
         sf1 = []
         sf2 = []
         sf3 = []
@@ -39,7 +40,7 @@ class combine:
 
         dateSetting = '%Y-%m-%d %H:%M:%S.%f'
         y = self.servo_lines[1].strip().split(",")
-        t0 = datetime.strptime(y[0],dateSetting)
+        t0 = datetime.strptime(y[0],dateSetting)            #start time - Gripper zero
         clock_diff = timedelta(microseconds=clock_diff)
 
 
@@ -52,7 +53,7 @@ class combine:
             sf3.append(int(y[3]))
             sf4.append(int(y[4]))
 
-        tmax = (servo_time-t0+clock_diff).total_seconds()
+        tmax = (servo_time-t0+clock_diff).total_seconds()   #last time stamp of Gripper
 
         #spl1 = UnivariateSpline(gripper_time,sf1)
         #spl2 = UnivariateSpline(gripper_time,sf2)
@@ -69,17 +70,26 @@ class combine:
 
         dateSetting = '%Y-%m-%d-%H-%M-%S.%f'
         #t0 = datetime.strptime(start, dateSetting)
+
+        try:
+            f = open(final_file,"w")
+        except IOError,e:
+            print("Failure during opening final file {}".format(e))
+            raise IOError ("Unable to open file for writing combined output {}".format(final_file))
+
         for line in self.ndi_lines:
             t= ''.join(line.strip().split(",")[0:1])
-            t = ((datetime.strptime(t,dateSetting))-t0).total_seconds()
+            t = ((datetime.strptime(t,dateSetting))-t0).total_seconds() #time elapsed from gripper zero
             x, y, z, Rx,Ry,Rz = map(float,(line.strip().split(",")[1:]))
             if (t <= tmax):
                 finger1 = int(spl1(t))
                 finger2 = int(spl2(t))
                 finger3 = int(spl3(t))
                 finger4 = int(spl4(t))
-                print t,x,y,z,Rx,Ry,Rz,finger1,finger2,finger3,finger4
-
+                #print t,"\t",x,"\t",y,"\t",z,"\t",Rx,Ry,Rz,"\t",finger1,finger2,finger3,finger4
+                f.write("{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:d},{:d},{:d},{:d}\n".
+                        format(t,x,y,z,Rx,Ry,Rz,finger1,finger2,finger3,finger4))
+        f.close()
         return
 
 
