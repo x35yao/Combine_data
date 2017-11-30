@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from scipy.interpolate import UnivariateSpline, interp1d
 import matplotlib.pyplot as plt
 
-gripper_file = "691960-2017-10-29-17-03-Servo-displacement-preprocessed"
+gripper_file = "706685-2017-11-05-12-28-Servo-displacement-preprocessed"
 
 class extrapolate:
 

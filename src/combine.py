@@ -28,6 +28,13 @@ class combine:
             print("Failure during opening processed_servo file {}".format(e))
             raise IOError ("Unable to open processed data file {}".format(processed_servo))
 
+        self.f1 = []
+        self.f2 = []
+        self.f3 = []
+        self.f4 = []
+
+        self.ndi_time = []
+
     def merge_data(self):
 
         clock_diff = int(self.servo_lines[0])   #Positive means the gripper clock is behind ndi
@@ -77,6 +84,8 @@ class combine:
             print("Failure during opening final file {}".format(e))
             raise IOError ("Unable to open file for writing combined output {}".format(final_file))
 
+
+
         for line in self.ndi_lines:
             t= ''.join(line.strip().split(",")[0:1])
             t = ((datetime.strptime(t,dateSetting))-t0).total_seconds() #time elapsed from gripper zero
@@ -89,6 +98,11 @@ class combine:
                 #print t,"\t",x,"\t",y,"\t",z,"\t",Rx,Ry,Rz,"\t",finger1,finger2,finger3,finger4
                 f.write("{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:d},{:d},{:d},{:d}\n".
                         format(t,x,y,z,Rx,Ry,Rz,finger1,finger2,finger3,finger4))
+                self.f1.append(finger1)
+                self.f2.append(finger2)
+                self.f3.append(finger3)
+                self.f4.append(finger4)
+                self.ndi_time.append(t)
         f.close()
         return
 
@@ -98,4 +112,9 @@ if __name__== "__main__":
 
     m = combine(labview_file,gripper_file)
     m.merge_data()
+    plt.plot(m.ndi_time, m.f1, 'r', label = 'Finger1')
+    plt.plot(m.ndi_time, m.f2, 'b', label = 'Finger2')
+    plt.plot(m.ndi_time, m.f3, 'g', label = 'Finger3')
+    plt.plot(m.ndi_time, m.f4, 'y', label = 'Finger4')
+    plt.show()
     pass

@@ -19,6 +19,11 @@ class process_gripper_file:
         except IOError,e:
             print("Failure during opening gripper file {}".format(e))
             raise IOError ("Unable to open Gripper data file {}".format(some_file))
+        if self.lines[-1][0] == 'S':
+            del self.lines[-1]
+            self.good = True
+        else:
+            self.good = False
 
 
     def pre_process(self):
@@ -127,11 +132,13 @@ class process_labview_file:
 if __name__=="__main__":
 
     p = process_gripper_file(gripper_file)
-    p.pre_process()
-    p.save_processed_file()
-    p = process_labview_file(labview_ndi_file)
-    p.preprocess()
-    p.save_processed_file()
+    if p.good:
+        p.pre_process()
+        p.save_processed_file()
+
+        p = process_labview_file(labview_ndi_file)
+        p.preprocess()
+        p.save_processed_file()
 
     pass
 
