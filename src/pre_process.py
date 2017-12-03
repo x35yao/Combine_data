@@ -4,7 +4,10 @@ import numpy as np
 
 
 gripper_file = "706685-2017-11-05-12-28-Servo-displacement"
-labview_ndi_file = "706685-2017-11-05-12-28-52.txt"
+#labview_ndi_file = "706685-2017-11-05-12-28-52.txt"
+
+labview_ndi_file = "131618-2017-10-28-13-34-20.txt"
+#labview_ndi_file = "706687-2017-11-05-12-29-32.txt"
 
 class process_gripper_file:
 
@@ -95,11 +98,19 @@ class process_labview_file:
             del y[0]
             if "Both" not in y[1]:
                 if "449" in self.lines[0]:
-                    y[1] = str(449)
-                    y[9] = str(339)
+                    if "339" in self.lines[1]:
+                        y[1] = str(449)
+                        y[9] = str(339)
+                    else:
+                        raise IOError ("Cannot pre-process NDI Labview file-Tool in line 2 should be 339")
+                elif "339" in self.lines[0]:
+                    if "449" in self.lines[1]:
+                        y[9] = str(449)
+                        y[1] = str(339)
+                    else:
+                        raise IOError ("Cannot pre-process NDI Labview file-Tool in line 2 should be 449")
                 else:
-                    y[9] = str(449)
-                    y[1] = str(339)
+                    raise IOError ("Cannot pre-process NDI Labview file:Tool in line 1 should be 449 or 339")
 
                 if (float(y[2])==0.0) and (float(y[3])==0.0) and (float(y[4])==0.0): # just checking if x,y,z are zero which means no values
                     y[1]=y[9]

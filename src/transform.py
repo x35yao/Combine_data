@@ -3,6 +3,8 @@ __author__ = 'srkiyengar'
 import numpy as np
 import math
 
+#the gripper handle has two locations (top and bottom)
+#Static transformation is to convert measurements of a rigid body fro
 #Pose and location when 449 is in the top - v1,q1 are 449 and v2,q2 are 339 at the center
 v1_449 = [97.663788, -180.389755, -1895.446655]
 q1_449 = [0.416817, -0.806037, 0.028007, -0.419267]
@@ -204,6 +206,7 @@ if __name__ == "__main__":
 
     HT_from449_to_gripper_center = static_transform_449_top(q1_449,v1_449,q2_339,v2_339)
     HT_object = static_transform_object_reference(object_origin)
+    Inverse_HT_object = inverse_homogenous_transform(HT_object)
     HT_from339_to_gripper_center = static_transform_339_bottom(q1_339,v1_339,q2_449,v2_449)
     with open(labview_ndi_file) as f:
         lines = f.readlines()
@@ -217,7 +220,7 @@ if __name__ == "__main__":
             R = rotation_matrix_from_quaternions([qr, qi, qj, qk])
             H = homogenous_transform(R, [x, y, z])
             H = H.dot(HT_from449_to_gripper_center)            # pose and position of Gripper Center w.r.t NDI frame
-            H_origin = inverse_homogenous_transform(HT_object).dot(H)   # Gripper w.r.t to object frame
+            H_origin = Inverse_HT_object.dot(H)   # Gripper w.r.t to object frame
             R_origin = H_origin[0:3,0:3]
             Rx,Ry,Rz = rotmat_to_axis_angle(R_origin)
             x = H_origin[0,3]
@@ -231,7 +234,7 @@ if __name__ == "__main__":
             R = rotation_matrix_from_quaternions([qr, qi, qj, qk])
             H = homogenous_transform(R, [x, y, z])
             H = H.dot(HT_from339_to_gripper_center)            # pose and position of Gripper Center w.r.t NDI frame
-            H_origin = inverse_homogenous_transform(HT_object).dot(H)   # Gripper w.r.t to object frame
+            H_origin = Inverse_HT_object.dot(H)   # Gripper w.r.t to object frame
             R_origin = H_origin[0:3,0:3]
             Rx,Ry,Rz = rotmat_to_axis_angle(R_origin)
             x = H_origin[0,3]
