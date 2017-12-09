@@ -1,6 +1,7 @@
 __author__ = 'srkiyengar'
 
 import numpy as np
+import os
 
 
 gripper_file = "706685-2017-11-05-12-28-Servo-displacement"
@@ -65,10 +66,17 @@ class process_gripper_file:
             i=i-1
         return
 
-    def save_processed_file(self):
+    def save_processed_file(self,**kwargs):
 
+        if kwargs :
+            fname = self.original_file+"-preprocessed"
+            print kwargs['fullpath']
+            print fname
+            my_file = os.path.join(kwargs['fullpath'],fname)
+        else:
+            my_file = self.original_file+"-preprocessed"
         try:
-            with open(self.original_file+"-preprocessed","w") as f:
+            with open(my_file,"w") as f:
                 i = str(self.clock_difference)+"\n"
                 f.write(i)
                 for i in self.processed_lines:
