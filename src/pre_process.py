@@ -21,14 +21,19 @@ class process_gripper_file:
                 self.processed_lines = []
                 self.clock_difference = 0
         except IOError,e:
-            print("Failure during opening gripper file {}".format(e))
-            raise IOError ("Unable to open Gripper data file {}".format(some_file))
+            #print("Failure during opening gripper file {}".format(e))
+            #raise IOError ("Unable to open Gripper data file {}".format(some_file))
+            self.good = False
+            self.error = "unable to open file"
+            return
         if self.lines[-1][0] == 'S':
             del self.lines[-1]
             self.good = True
+            self.error = "No error"
         else:
             self.good = False
-
+            self.error = "Bad grasp"
+        return
 
     def pre_process(self):
 
@@ -68,11 +73,10 @@ class process_gripper_file:
 
     def save_processed_file(self,**kwargs):
 
-        if kwargs :
+        if kwargs:
             fname = self.original_file+"-preprocessed"
-            print kwargs['fullpath']
-            print fname
-            my_file = os.path.join(kwargs['fullpath'],fname)
+            filename = os.path.split(fname)[1]
+            my_file = os.path.join(kwargs['fullpath'],filename)
         else:
             my_file = self.original_file+"-preprocessed"
         try:
@@ -82,9 +86,12 @@ class process_gripper_file:
                 for i in self.processed_lines:
                     i = i + "\n"
                     f.write(i)
-        except IOError,e:
-            print("While opening the preprocessed file for writing {}".format(e))
-            raise IOError ("Unable to create pre-processed Gripper data file")
+            return True
+        except :
+            self.error ="Failure in opening and writing preprocessed servo file"
+            return False
+            #print("While opening the preprocessed file for writing {}".format(e))
+            #raise IOError ("Unable to create pre-processed Gripper data file")
 
 class process_labview_file:
 
@@ -95,12 +102,17 @@ class process_labview_file:
                 self.lines = f.readlines()
                 self.processed_lines = []
         except IOError,e:
-            print("Failure during opening labview file {}".format(e))
-            raise IOError ("Unable to open NDI Labview file {}".format(some_file))
+            #print("Failure during opening labview file {}".format(e))
+            #raise IOError ("Unable to open NDI Labview file {}".format(some_file))
+            self.error = "Unable to open NDI Labview file"
+            self.good = False
+            return
+        self.error ="No Error"
+        self.good = True
+        return
 
     def preprocess(self):
     # preprocess cannot delete the lines based on NDI x-axis since 449 and 339 are in different position
-        max_x = -1000.0
         for line in self.lines[6:]:
             y = line.strip().split(",")
             del y[0]
@@ -110,15 +122,22 @@ class process_labview_file:
                         y[1] = str(449)
                         y[9] = str(339)
                     else:
-                        raise IOError ("Cannot pre-process NDI Labview file-Tool in line 2 should be 339")
+                        #raise IOError ("Cannot pre-process NDI Labview file-Tool in line 2 should be 339")
+                        self.error = "Cannot pre-process NDI Labview file-Tool in line 2 should be 339"
+                        return False
+
                 elif "339" in self.lines[0]:
                     if "449" in self.lines[1]:
                         y[9] = str(449)
                         y[1] = str(339)
                     else:
-                        raise IOError ("Cannot pre-process NDI Labview file-Tool in line 2 should be 449")
+                        #raise IOError ("Cannot pre-process NDI Labview file-Tool in line 2 should be 449")
+                        self.error = "Cannot pre-process NDI Labview file-Tool in line 2 should be 449"
+                        return False
                 else:
-                    raise IOError ("Cannot pre-process NDI Labview file:Tool in line 1 should be 449 or 339")
+                    #raise IOError ("Cannot pre-process NDI Labview file:Tool in line 1 should be 449 or 339")
+                    self.error = "Cannot pre-process NDI Labview file:Tool in line 1 should be 449 or 339"
+                    return False
 
                 if (float(y[2])==0.0) and (float(y[3])==0.0) and (float(y[4])==0.0): # just checking if x,y,z are zero which means no values
                     y[1]=y[9]
@@ -133,18 +152,30 @@ class process_labview_file:
                 y = y[:9]
                 newline = ','.join(y)
                 self.processed_lines.append(newline)
+        self.error ="No Error"
+        return True
 
 
-    def save_processed_file(self):
+    def save_processed_file(self, **kwargs):
 
+        if kwargs:
+            fname = self.original_file+"-preprocessed"
+            filename = os.path.split(fname)[1]
+            my_file = os.path.join(kwargs['fullpath'],filename)
+
+        else:
+            my_file = self.original_file+"-preprocessed"
         try:
-            with open(self.original_file+"-preprocessed","w") as f:
+            with open(my_file,"w") as f:
                 for i in self.processed_lines:
                     i = i + "\n"
                     f.write(i)
+            return True
         except IOError,e:
-            print("While opening the preprocessed file for writing {}".format(e))
-            raise IOError ("Unable to create pre-processed NDI data file")
+            self.error = "Unable to opening file to save NDI preprosessed file"
+            return False
+            #print("While opening the preprocessed file for writing {}".format(e))
+            #raise IOError ("Unable to create pre-processed NDI data file")
 
 
 
