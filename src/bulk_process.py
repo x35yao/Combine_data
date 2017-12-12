@@ -2,6 +2,7 @@ __author__ = 'srkiyengar'
 
 import pre_process as pp
 import transform as tf
+import combine as c
 import os
 import shutil
 
@@ -93,7 +94,7 @@ class bulk_process:
             j = 0   #ndi file index
             for ndi_filename in self.ndi_files_list:
                 if fname in ndi_filename:
-                    self.matched_list.append((fname,ndi_filename))
+                    self.matched_list.append((name,ndi_filename))
                     del servo_processed_files[i]
                     del ndi_files[j]
                 j+=1
@@ -136,6 +137,18 @@ class bulk_process:
             my_transform.save_processed_file()
         pass
 
+    def combine_processed_files(self):
+        for name in self.matched_list:
+            tname = name[1]+"-preprocessed"+"-transformed"
+            ndi_file = os.path.join(self.processed,tname)
+            pname = name[0]+"-preprocessed"
+            gripper_file = os.path.join(self.processed,pname)
+            m = c.combine(ndi_file,gripper_file)
+            fname = name[0].split("-")[0]
+            combined_file = os.path.join(self.results,fname)
+            m.merge_data(combined_file)
+
+
 
 if __name__ == "__main__":
 
@@ -147,8 +160,7 @@ if __name__ == "__main__":
     static_transform = tf.ndi_transformation(my_bulk_object.dname)
     my_bulk_object.transform_preprocessed_ndi_files(static_transform)
 
-
-
+    my_bulk_object.combine_processed_files()
 
     pass
 

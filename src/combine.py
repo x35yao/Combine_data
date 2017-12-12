@@ -35,7 +35,7 @@ class combine:
 
         self.ndi_time = []
 
-    def merge_data(self):
+    def merge_data(self,*args):
 
         clock_diff = int(self.servo_lines[0])   #Positive means the gripper clock is behind ndi
         sf1 = []
@@ -78,11 +78,16 @@ class combine:
         dateSetting = '%Y-%m-%d-%H-%M-%S.%f'
         #t0 = datetime.strptime(start, dateSetting)
 
+        if args:
+            fname = args[0]
+        else:
+            fname = final_file
+
         try:
-            f = open(final_file,"w")
+            f = open(fname,"w")
         except IOError,e:
             print("Failure during opening final file {}".format(e))
-            raise IOError ("Unable to open file for writing combined output {}".format(final_file))
+            raise IOError ("Unable to open file for writing combined output {}".format(fname))
 
 
 
