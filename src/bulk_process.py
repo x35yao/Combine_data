@@ -87,18 +87,15 @@ class bulk_process:
 
         servo_processed_files = list(self.servo_files_processed)
         ndi_files = list(self.ndi_files_list)
-        i = 0   #servo file index
 
         for name in self.servo_files_processed:
             fname = name.split("-")[0]
-            j = 0   #ndi file index
             for ndi_filename in self.ndi_files_list:
                 if fname in ndi_filename:
                     self.matched_list.append((name,ndi_filename))
-                    del servo_processed_files[i]
-                    del ndi_files[j]
-                j+=1
-            i+=1
+                    servo_processed_files.remove(name)
+                    ndi_files.remove(ndi_filename)
+                    break
         for fname in servo_processed_files:
             self.unmatched_list.append((fname,0))
             fname = fname + "-preprocessed"
