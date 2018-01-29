@@ -20,7 +20,7 @@ q1_339 = [0.7765, -0.2614, -0.5724, 0.032]
 v2_449 = [107.71, -127.45, -1699.52]
 q2_449 = [0.2803, -0.5491, 0.4564, -0.6415]
 
-labview_ndi_file = "706685-2017-11-05-12-28-52.txt-preprocessed"
+labview_ndi_file = "781530-2018-01-27-21-02-34.txt-preprocessed"
 
 def rotmat_to_axis_angle(R):
 
@@ -44,6 +44,37 @@ def rotmat_to_axis_angle(R):
 
     return ax, by, cz
 
+def axis_angle_to_rotmat(Rx,Ry,Rz):
+
+    R = np.zeros((3,3),dtype=float)
+    a1 = [Rx,Ry,Rz]
+    angle = np.linalg.norm(a1)
+    a1 = a1/angle
+
+    c = np.cos(angle)
+    s = np.sin(angle)
+    t = 1.0-c
+
+    R[0,0] = c + a1[0]*a1[0]*t
+    R[1,1] = c + a1[1]*a1[1]*t
+    R[2,2] = c + a1[2]*a1[2]*t
+
+    tmp1 = a1[0]*a1[1]*t
+    tmp2 = a1[2]*s
+    R[1,0] = tmp1 + tmp2
+    R[0,1] = tmp1 - tmp2
+
+    tmp1 = a1[0]*a1[2]*t
+    tmp2 = a1[1]*s
+    R[2,0] = tmp1 - tmp2
+    R[0,2] = tmp1 + tmp2
+
+    tmp1 = a1[1]*a1[2]*t
+    tmp2 = a1[0]*s
+    R[2,1] = tmp1 + tmp2
+    R[1,2] = tmp1 - tmp2
+
+    return R
 
 def rotation_matrix_from_quaternions(q_vector):
 
@@ -183,16 +214,38 @@ def static_transform_339_bottom(q1,v1,q2,v2):
     H = (h1.dot(H2)).dot(H3)
     return H
 
-def static_transform_object_reference(position_vector):
+# This static transform will move rotate from the NDI reference frame to object platform
+def st_from_ndi_to_object_reference(position_vector):
+    # the Z axis of the object is pointing upwards.
+    # the x and y are marked. {for reference, +ive x aligned to the +z of the NDI reference
 
-    first = [0,0,1]
+
+    first = [0,0,-1]
     second= [0,1,0]
-    third = [-1,0,0]
+    third = [1,0,0]
     R = np.array([first,second,third])
     H = homogenous_transform(R,position_vector)
     return H
 
 
+# The Rx, Ry, Rz,x,y,z are the tcp position and pose when the object platform in the right orientation on the UR-5 table and
+# TCP without any attachment at the origin of the platform. While aligning the TCP, the y of the TCP (opposite to the stub)
+# should be aligned to the y of the platform.
+#
+def st_from_UR5_tcp_to_object_platform(Rx,Ry,Rz,x,y,z):
+
+    first = [-1,0,0]
+    second= [0,1,0]
+    third = [0,0,-1]
+    R = np.array([first,second,third])
+    H = homogenous_transform(R,[0,0,0])
+    R1 = axis_angle_to_rotmat(Rx,Ry,Rz)
+    H1 = homogenous_transform(R1,x,y,z)
+    # H1 represents Homogenous transformation from UR5 base to UR5 tool center point.
+    # H represents Homogenous transformation from tool center point to object frame
+    # F is the homogenous transformation from base to object frame
+    F = np.dot(H1,H)
+    return F
 
 
 class ndi_transformation:
@@ -273,7 +326,7 @@ class ndi_transformation:
 
         self.HT_from449_to_gripper_center = static_transform_449_top(q1_449,v1_449,q2_339,v2_339)
         self.HT_from339_to_gripper_center = static_transform_339_bottom(q1_339,v1_339,q2_449,v2_449)
-        self.Inverse_HT_object = inverse_homogenous_transform(static_transform_object_reference(object_origin))
+        self.Inverse_HT_object = inverse_homogenous_transform(st_from_ndi_to_object_reference(object_origin))
         self.processed_lines = []
         self.fname = ""
         self.success = 1
@@ -307,7 +360,11 @@ class transformer:
                 H = H.dot(self.st.HT_from449_to_gripper_center)            # pose and position of Gripper Center w.r.t NDI frame
                 H_origin = self.st.Inverse_HT_object.dot(H)                # Gripper w.r.t to object frame
                 R_origin = H_origin[0:3,0:3]
-                Rx,Ry,Rz = rotmat_to_axis_angle(R_origin)
+                try:
+                    Rx,Ry,Rz = rotmat_to_axis_angle(R_origin)
+                except ValueError, e:
+                    print("Value error in line {} in file {}".format(line,self.fname))
+                    return 0
                 x = H_origin[0,3]
                 y = H_origin[1,3]
                 z = H_origin[2,3]
@@ -321,12 +378,17 @@ class transformer:
                 H = H.dot(self.st.HT_from339_to_gripper_center)   # pose and position of Gripper Center w.r.t NDI frame
                 H_origin = self.st.Inverse_HT_object.dot(H)       # Gripper w.r.t to object frame
                 R_origin = H_origin[0:3,0:3]
-                Rx,Ry,Rz = rotmat_to_axis_angle(R_origin)
+                try:
+                    Rx,Ry,Rz = rotmat_to_axis_angle(R_origin)
+                except ValueError, e:
+                    print("Value error in line {} in file {}".format(line,self.fname))
+                    return 0
                 x = H_origin[0,3]
                 y = H_origin[1,3]
                 z = H_origin[2,3]
                 self.processed_lines.append(str(capture_time)+','+str(x)+','+str(y)+','+str(z)+','+str(Rx)+','
                                    +str(Ry)+','+str(Rz))
+        return 1
 
     def save_processed_file(self):
 
@@ -348,5 +410,8 @@ if __name__ == "__main__":
 
     my_static_transform = ndi_transformation("/home/srkiyengar/raw_data")
     my_file_transform = transformer(labview_ndi_file,my_static_transform)
-    my_file_transform.process_file()
-    my_file_transform.save_processed_file()
+    if (my_file_transform.process_file()):
+        my_file_transform.save_processed_file()
+    else:
+        print"process failed due to value error"
+        

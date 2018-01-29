@@ -126,13 +126,21 @@ class bulk_process:
             i=+1
 
     def transform_preprocessed_ndi_files(self,st):
+        bad_list = []
         for name in self.matched_list:
             pname = name[1]+"-preprocessed"
             processed_ndi_file = os.path.join(self.processed,pname)
             my_transform = tf.transformer(processed_ndi_file,st)
-            my_transform.process_file()
-            my_transform.save_processed_file()
-        pass
+            if (my_transform.process_file()):
+                my_transform.save_processed_file()
+            else:
+                bad_list.append(name)
+        for val in bad_list:
+            self.matched_list.remove(val)
+            src = os.path.join(self.archive_good,val[1])
+            shutil.move(src,self.archive_bad)
+            # clean up the failed ndi file and its matching pair from processed good to processed bad.
+        return
 
     def combine_processed_files(self):
         for name in self.matched_list:

@@ -4,11 +4,13 @@ import numpy as np
 import os
 
 
-gripper_file = "706685-2017-11-05-12-28-Servo-displacement"
-#labview_ndi_file = "706685-2017-11-05-12-28-52.txt"
+gripper_file = '781530-2018-01-27-21-02-Servo-displacement'
+# gripper_file = "706685-2017-11-05-12-28-Servo-displacement"
+# labview_ndi_file = "706685-2017-11-05-12-28-52.txt"
 
-labview_ndi_file = "131618-2017-10-28-13-34-20.txt"
-#labview_ndi_file = "706687-2017-11-05-12-29-32.txt"
+labview_ndi_file = '781530-2018-01-27-21-02-34.txt'
+# labview_ndi_file = "131618-2017-10-28-13-34-20.txt"
+# labview_ndi_file = "706687-2017-11-05-12-29-32.txt"
 
 class process_gripper_file:
 
