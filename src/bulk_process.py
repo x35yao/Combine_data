@@ -7,7 +7,7 @@ import os
 import shutil
 
 # "706685-2017-11-05-12-28-Servo-displacement"
-dname = "/home/srkiyengar/raw_data"
+dname = "../raw_data"
 
 class bulk_process:
 

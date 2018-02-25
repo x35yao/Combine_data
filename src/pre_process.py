@@ -4,13 +4,9 @@ import numpy as np
 import os
 
 
-gripper_file = '781530-2018-01-27-21-02-Servo-displacement'
-# gripper_file = "706685-2017-11-05-12-28-Servo-displacement"
-# labview_ndi_file = "706685-2017-11-05-12-28-52.txt"
+gripper_file = '../raw_data/305625-2018-02-19-20-50-Servo-displacement'
+labview_ndi_file = '../raw_data/305625-2018-02-19-20-50-26.txt'
 
-labview_ndi_file = '781530-2018-01-27-21-02-34.txt'
-# labview_ndi_file = "131618-2017-10-28-13-34-20.txt"
-# labview_ndi_file = "706687-2017-11-05-12-29-32.txt"
 
 class process_gripper_file:
 
@@ -28,8 +24,8 @@ class process_gripper_file:
             self.good = False
             self.error = "unable to open file"
             return
-        if self.lines[-1][0] == 'S':
-            del self.lines[-1]
+        if self.lines[-2][0] == 'S':
+            #del self.lines[-1]
             self.good = True
             self.error = "No error"
         else:
@@ -49,7 +45,7 @@ class process_gripper_file:
         self.clock_difference = int(n)
 
         #remove lines which do not have servo positions
-        for line in self.lines[2:-4]:
+        for line in self.lines[2:-6]:
             y = line.strip().split(",")
             del y[0]
             y = map(int,y)
@@ -59,6 +55,7 @@ class process_gripper_file:
                     max_val = y[0]
 
         #identify the end point by looking at the highest value of servo1.
+        #this is where the gripping ends. This is not to determine if the object has been lifted or moved
         i=0
         for line in reversed(self.processed_lines):  # from the bottom identify the largest value of servo motor 1
             y = line.strip().split(",")
@@ -71,6 +68,7 @@ class process_gripper_file:
         while(i != 0):  #removing lines that are below the largest since they indicate gripper opening after closing
             del self.processed_lines[-i]
             i=i-1
+        self.processed_lines.append(self.lines[-1])     #appending the taxonomy to the last line
         return
 
     def save_processed_file(self,**kwargs):
@@ -192,7 +190,9 @@ if __name__=="__main__":
         p.preprocess()
         p.save_processed_file()
 
-    pass
+    else:
+        print("bad grasp in file {}".format(p.original_file))
+        pass
 
 
 

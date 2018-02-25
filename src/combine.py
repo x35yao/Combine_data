@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 from scipy.interpolate import UnivariateSpline, interp1d
 import matplotlib.pyplot as plt
 
-labview_file = "706685-2017-11-05-12-28-52.txt-preprocessed-transformed"
-gripper_file = "706685-2017-11-05-12-28-Servo-displacement-preprocessed"
-final_file = "706685-2017-11-05-12-28-final"
+labview_file = "../raw_data/305625-2018-02-19-20-50-26.txt-preprocessed-transformed"
+gripper_file = "../raw_data/305625-2018-02-19-20-50-Servo-displacement-preprocessed"
+final_file = "305625-2018-02-19-20-final"
 
 class combine:
 
@@ -50,8 +50,8 @@ class combine:
         t0 = datetime.strptime(y[0],dateSetting)            #start time - Gripper zero
         clock_diff = timedelta(microseconds=clock_diff)
 
-
-        for line in self.servo_lines[1:]:
+        taxonomy = self.servo_lines[-1]
+        for line in self.servo_lines[1:-1]:
             y = line.strip().split(",")
             servo_time = datetime.strptime(y[0], dateSetting)
             ndi_time_for_gripper.append((servo_time-t0+clock_diff).total_seconds())
@@ -108,6 +108,7 @@ class combine:
                 self.f3.append(finger3)
                 self.f4.append(finger4)
                 self.ndi_time.append(t)
+        f.write(taxonomy)
         f.close()
         return
 

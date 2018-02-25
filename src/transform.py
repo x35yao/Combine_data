@@ -12,7 +12,8 @@ q1_449 = [0.416817, -0.806037, 0.028007, -0.419267]
 v2_339 = [78.019791, -26.525036, -1980.021118]
 q2_339 = [0.222542, 0.551251, 0.281243, 0.753326]
 
-object_origin = [195.30,23.96,-1886.08]
+#object_origin = [195.30,23.96,-1886.08]
+object_origin = [40.96,178.15,-1865.08]     #recorded using the new setup on 24 Feb. 2018
 
 #pose and location when v1,q1 of 339 is at the bottom and v2,q2 of 449 at the center
 v1_339 = [203.19, -58.99, -1621.9]
@@ -20,7 +21,7 @@ q1_339 = [0.7765, -0.2614, -0.5724, 0.032]
 v2_449 = [107.71, -127.45, -1699.52]
 q2_449 = [0.2803, -0.5491, 0.4564, -0.6415]
 
-labview_ndi_file = "781530-2018-01-27-21-02-34.txt-preprocessed"
+labview_ndi_file = "../raw_data/305625-2018-02-19-20-50-26.txt-preprocessed"
 
 def rotmat_to_axis_angle(R):
 
@@ -408,7 +409,7 @@ class transformer:
 
 if __name__ == "__main__":
 
-    my_static_transform = ndi_transformation("/home/srkiyengar/raw_data")
+    my_static_transform = ndi_transformation("../raw_data")
     my_file_transform = transformer(labview_ndi_file,my_static_transform)
     if (my_file_transform.process_file()):
         my_file_transform.save_processed_file()
