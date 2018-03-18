@@ -34,6 +34,8 @@ def rotmat_to_axis_angle(R):
     r20 = R[2, 0]
     r21 = R[2, 1]
     r22 = R[2, 2]
+    # catch the error
+    angle = (r00 + r11 + r22 - 1) / 2
 
     theta = math.acos((r00 + r11 + r22 - 1) / 2)
     sinetheta = math.sin(theta)
@@ -363,14 +365,20 @@ class transformer:
                 R_origin = H_origin[0:3,0:3]
                 try:
                     Rx,Ry,Rz = rotmat_to_axis_angle(R_origin)
+                    x = H_origin[0, 3]
+                    y = H_origin[1, 3]
+                    z = H_origin[2, 3]
+                    self.processed_lines.append(
+                        str(capture_time) + ',' + str(x) + ',' + str(y) + ',' + str(z) + ',' + str(Rx) + ','
+                        + str(Ry) + ',' + str(Rz))
                 except ValueError, e:
-                    print("Value error in line {} in file {}".format(line,self.fname))
-                    return 0
-                x = H_origin[0,3]
-                y = H_origin[1,3]
-                z = H_origin[2,3]
-                self.processed_lines.append(str(capture_time)+','+str(x)+','+str(y)+','+str(z)+','+str(Rx)+','
-                                   +str(Ry)+','+str(Rz))
+                    print("Transform.py: process file() - Value error for line {} in file {}".format(line,self.fname))
+                    #return 0
+                #x = H_origin[0,3]
+                #y = H_origin[1,3]
+                #z = H_origin[2,3]
+                #self.processed_lines.append(str(capture_time)+','+str(x)+','+str(y)+','+str(z)+','+str(Rx)+',\
+                # '+str(Ry)+','+str(Rz))
 
             elif (tool == "339"):
                 x, y, z, qr, qi, qj, qk = map(float,(line.strip().split(",")[2:]))
