@@ -423,4 +423,3 @@ if __name__ == "__main__":
         my_file_transform.save_processed_file()
     else:
         print"process failed due to value error"
-        

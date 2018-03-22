@@ -47,8 +47,12 @@ class combine:
 
         dateSetting = '%Y-%m-%d %H:%M:%S.%f'
         y = self.servo_lines[1].strip().split(",")
-        t0 = datetime.strptime(y[0],dateSetting)            #start time - Gripper zero
-        clock_diff = timedelta(microseconds=clock_diff)
+        try:
+            t0 = datetime.strptime(y[0],dateSetting)            #start time - Gripper zero
+            clock_diff = timedelta(microseconds=clock_diff)
+        except:
+            print("Gripper File {} may not have figner position data".format(self.gripper))
+            return 0
 
         taxonomy = self.servo_lines[-1]
         for line in self.servo_lines[1:-1]:
@@ -72,8 +76,7 @@ class combine:
         spl3 = interp1d(ndi_time_for_gripper, sf3)
         spl4 = interp1d(ndi_time_for_gripper, sf4)
 
-        start = self.ndi_lines[0].strip().split(",")[0:1]
-        start = ''.join(start)
+        #start = self.ndi_lines[0].strip().split(",")[0:1]
 
         dateSetting = '%Y-%m-%d-%H-%M-%S.%f'
         #t0 = datetime.strptime(start, dateSetting)
@@ -86,8 +89,8 @@ class combine:
         try:
             f = open(fname,"w")
         except IOError,e:
-            print("Failure during opening final file {}".format(e))
-            raise IOError ("Unable to open file for writing combined output {}".format(fname))
+            print("Failure during opening final file {}".format(fname))
+            return 0
 
 
 
@@ -110,7 +113,7 @@ class combine:
                 self.ndi_time.append(t)
         f.write(taxonomy)
         f.close()
-        return
+        return 1
 
 
 

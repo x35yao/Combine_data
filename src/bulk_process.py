@@ -151,7 +151,8 @@ class bulk_process:
             m = c.combine(ndi_file,gripper_file)
             fname = name[0].split("-")[0]
             combined_file = os.path.join(self.results,fname)
-            m.merge_data(combined_file)
+            if m.merge_data(combined_file) == 0:
+                print("Could not create combined file = {}".format(combined_file))
 
 
 
@@ -163,11 +164,11 @@ if __name__ == "__main__":
     my_bulk_object.pre_process_ndi_data()
 
     static_transform = tf.ndi_transformation(my_bulk_object.dname)
-    my_bulk_object.transform_preprocessed_ndi_files(static_transform)
-
-    my_bulk_object.combine_processed_files()
+    if static_transform.success == 0:
+        print (static_transform.error)
+        raise RuntimeError("Error creating ndi_tranformation object in transform.py")
+    else:
+        my_bulk_object.transform_preprocessed_ndi_files(static_transform)
+        my_bulk_object.combine_processed_files()
 
     pass
-
-
-
