@@ -3,10 +3,14 @@ __author__ = 'srkiyengar'
 from datetime import datetime, timedelta
 from scipy.interpolate import UnivariateSpline, interp1d
 import matplotlib.pyplot as plt
+import logging.handlers
 
 labview_file = "../raw_data/305625-2018-02-19-20-50-26.txt-preprocessed-transformed"
 gripper_file = "../raw_data/305625-2018-02-19-20-50-Servo-displacement-preprocessed"
 final_file = "305625-2018-02-19-20-final"
+
+my_logger = logging.getLogger("pose_data_bulk_process")
+LOG_LEVEL = logging.DEBUG
 
 class combine:
 
@@ -20,6 +24,7 @@ class combine:
         except IOError,e:
             print("Failure during opening processed_ndi file {}".format(e))
             raise IOError ("Unable to open processed data file {}".format(processed_ndi))
+            my_logger.info("Unable to open processed data file {}".format(processed_ndi))
 
         try:
             with open(processed_servo) as f:
@@ -27,6 +32,7 @@ class combine:
         except IOError,e:
             print("Failure during opening processed_servo file {}".format(e))
             raise IOError ("Unable to open processed data file {}".format(processed_servo))
+            my_logger.info("Unable to open processed data file {}".format(processed_ndi))
 
         self.f1 = []
         self.f2 = []
@@ -54,8 +60,9 @@ class combine:
             print("Gripper File {} may not have figner position data".format(self.gripper))
             return 0
 
-        taxonomy = self.servo_lines[-1]
-        for line in self.servo_lines[1:-1]:
+        hangingNewline = self.servo_lines[-1] == '\n'
+        taxonomy = self.servo_lines[-1-hangingNewline]
+        for line in self.servo_lines[1:-1-hangingNewline]:
             y = line.strip().split(",")
             servo_time = datetime.strptime(y[0], dateSetting)
             ndi_time_for_gripper.append((servo_time-t0+clock_diff).total_seconds())
@@ -90,6 +97,7 @@ class combine:
             f = open(fname,"w")
         except IOError,e:
             print("Failure during opening final file {}".format(fname))
+            my_logger.info("Failure during opening final file {}".format(fname))
             return 0
 
 

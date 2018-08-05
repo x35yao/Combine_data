@@ -5,6 +5,13 @@ import transform as tf
 import combine as c
 import os
 import shutil
+import logging.handlers
+from datetime import datetime
+
+
+#logger
+LOG_LEVEL = logging.DEBUG
+LOG_FILENAME = 'bulk_process' + datetime.now().strftime('%Y-%m-%d---%H:%M:%S')
 
 # "706685-2017-11-05-12-28-Servo-displacement"
 dname = "../raw_data"
@@ -72,13 +79,19 @@ class bulk_process:
             servo_file = os.path.join(self.dname,gripper_file)
             servo_data = pp.process_gripper_file(servo_file)
             if servo_data.good:
-                servo_data.pre_process()
-                if servo_data.save_processed_file(fullpath = self.processed):
-                    self.servo_files_processed.append(gripper_file)
-                    shutil.move(servo_file,os.path.join(self.archive_good,gripper_file))
-                else:
-                    self.servo_files_processing_failure.append(gripper_file)
-                    shutil.move(servo_file,os.path.join(self.processing_failure,gripper_file))
+                try:
+                    servo_data.pre_process()
+                    if servo_data.save_processed_file(fullpath = self.processed):
+                        self.servo_files_processed.append(gripper_file)
+                        shutil.move(servo_file,os.path.join(self.archive_good,gripper_file))
+                    else:
+                        self.servo_files_processing_failure.append(gripper_file)
+                        shutil.move(servo_file,os.path.join(self.processing_failure,gripper_file))
+                except Exception as e1:
+                    print(e1)
+                    my_logger.info("pre-process error: {} for file: {}".format(e1,gripper_file))
+                    self.servo_files_bad_grasp.append(gripper_file)
+                    shutil.move(servo_file, os.path.join(self.archive_bad, gripper_file))
             else:   #move servofile it to archive bad
                 self.servo_files_bad_grasp.append(gripper_file)
                 shutil.move(servo_file,os.path.join(self.archive_bad,gripper_file))
@@ -152,11 +165,21 @@ class bulk_process:
             fname = name[0].split("-")[0]
             combined_file = os.path.join(self.results,fname)
             if m.merge_data(combined_file) == 0:
+                my_logger.info("Could not create combined file = {}".format(combined_file))
                 print("Could not create combined file = {}".format(combined_file))
 
 
 
 if __name__ == "__main__":
+
+    # Set up a logger with output level set to debug; Add the handler to the logger
+    my_logger = logging.getLogger("pose_data_bulk_process")
+    my_logger.setLevel(LOG_LEVEL)
+    handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=6000000, backupCount=5)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    my_logger.addHandler(handler)
+    # end of logfile preparation Log levels are debug, info, warn, error, critical
 
     my_bulk_object = bulk_process(dname)
     my_bulk_object.pre_process_servo_data()
@@ -166,7 +189,8 @@ if __name__ == "__main__":
     static_transform = tf.ndi_transformation(my_bulk_object.dname)
     if static_transform.success == 0:
         print (static_transform.error)
-        raise RuntimeError("Error creating ndi_tranformation object in transform.py")
+        my_logger.info("Error creating ndi_tranformation object in transform.py")
+        #raise RuntimeError("Error creating ndi_tranformation object in transform.py")
     else:
         my_bulk_object.transform_preprocessed_ndi_files(static_transform)
         my_bulk_object.combine_processed_files()

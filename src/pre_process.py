@@ -4,8 +4,8 @@ import numpy as np
 import os
 
 
-gripper_file = '../raw_data/305625-2018-02-19-20-50-Servo-displacement'
-labview_ndi_file = '../raw_data/305625-2018-02-19-20-50-26.txt'
+gripper_file = '../raw_data/729455-2018-03-30-11-25-Servo-displacement'
+labview_ndi_file = '../raw_data/729455-2018-03-30-11-26-03.txt'
 
 
 class process_gripper_file:
@@ -193,7 +193,3 @@ if __name__=="__main__":
     else:
         print("bad grasp in file {}".format(p.original_file))
         pass
-
-
-
-

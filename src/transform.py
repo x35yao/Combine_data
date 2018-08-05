@@ -3,6 +3,12 @@ __author__ = 'srkiyengar'
 import numpy as np
 import math
 import os
+import logging.handlers
+
+
+my_logger = logging.getLogger("pose_data_bulk_process")
+LOG_LEVEL = logging.DEBUG
+
 
 #the gripper handle has two locations (top and bottom)
 #Static transformation is to convert measurements of a rigid body fro
@@ -13,7 +19,10 @@ v2_339 = [78.019791, -26.525036, -1980.021118]
 q2_339 = [0.222542, 0.551251, 0.281243, 0.753326]
 
 #object_origin = [195.30,23.96,-1886.08]
-object_origin = [40.96,178.15,-1865.08]     #recorded using the new setup on 24 Feb. 2018
+#object_origin = [40.96,178.15,-1865.08]        #recorded using the new setup on 24 Feb. 2018
+# object_origin = [44.28,178.75,1889.11]        # 17 March 2018 the -ve sign for z seems missing,noticed on May10,2018
+#object_origin = [38.93, 180.00, -1886.60]      # recorded on 30 MArch 2018
+object_origin = [39.63,181.75,-1887.68]         # May1 2018
 
 #pose and location when v1,q1 of 339 is at the bottom and v2,q2 of 449 at the center
 v1_339 = [203.19, -58.99, -1621.9]
@@ -373,6 +382,7 @@ class transformer:
                         + str(Ry) + ',' + str(Rz))
                 except ValueError, e:
                     print("Transform.py: process file() - Value error for line {} in file {}".format(line,self.fname))
+                    my_logger.info("Transform.py: process file() - Value error for line {} in file {}".format(line,self.fname))
                     #return 0
                 #x = H_origin[0,3]
                 #y = H_origin[1,3]
