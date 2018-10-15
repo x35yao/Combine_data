@@ -5,9 +5,9 @@ from scipy.interpolate import UnivariateSpline, interp1d
 import matplotlib.pyplot as plt
 import logging.handlers
 
-labview_file = "../raw_data/305625-2018-02-19-20-50-26.txt-preprocessed-transformed"
-gripper_file = "../raw_data/305625-2018-02-19-20-50-Servo-displacement-preprocessed"
-final_file = "305625-2018-02-19-20-final"
+labview_file = "../raw_data/897034-2018-05-17-13-53-31.txt-preprocessed-transformed"
+gripper_file = "../raw_data/897034-2018-05-17-13-53-Servo-displacement-preprocessed"
+final_file = "897034-final"
 
 my_logger = logging.getLogger("pose_data_bulk_process")
 LOG_LEVEL = logging.DEBUG
@@ -56,11 +56,16 @@ class combine:
         try:
             t0 = datetime.strptime(y[0],dateSetting)            #start time - Gripper zero
             clock_diff = timedelta(microseconds=clock_diff)
+            F = y[1:]
         except:
             print("Gripper File {} may not have figner position data".format(self.gripper))
             return 0
 
-        hangingNewline = self.servo_lines[-1] == '\n'
+        if self.servo_lines[-1] == '\n':
+            hangingNewline =1
+        else:
+            hangingNewline = 0
+
         taxonomy = self.servo_lines[-1-hangingNewline]
         for line in self.servo_lines[1:-1-hangingNewline]:
             y = line.strip().split(",")
@@ -120,6 +125,8 @@ class combine:
                 self.f4.append(finger4)
                 self.ndi_time.append(t)
         f.write(taxonomy)
+        # Finger start position has an offset of 840
+        f.write("Finger start position = {}".format(map(int,F)))
         f.close()
         return 1
 

@@ -4,8 +4,8 @@ import numpy as np
 import os
 
 
-gripper_file = '../raw_data/729455-2018-03-30-11-25-Servo-displacement'
-labview_ndi_file = '../raw_data/729455-2018-03-30-11-26-03.txt'
+gripper_file = '../raw_data/897034-2018-05-17-13-53-Servo-displacement'
+labview_ndi_file = '../raw_data/897034-2018-05-17-13-53-31.txt'
 
 
 class process_gripper_file:

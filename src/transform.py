@@ -30,7 +30,7 @@ q1_339 = [0.7765, -0.2614, -0.5724, 0.032]
 v2_449 = [107.71, -127.45, -1699.52]
 q2_449 = [0.2803, -0.5491, 0.4564, -0.6415]
 
-labview_ndi_file = "../raw_data/305625-2018-02-19-20-50-26.txt-preprocessed"
+labview_ndi_file = "../raw_data/897034-2018-05-17-13-53-31.txt-preprocessed"
 
 def rotmat_to_axis_angle(R):
 
@@ -243,7 +243,10 @@ def st_from_ndi_to_object_reference(position_vector):
 # The Rx, Ry, Rz,x,y,z are the tcp position and pose when the object platform in the right orientation on the UR-5 table and
 # TCP without any attachment at the origin of the platform. While aligning the TCP, the y of the TCP (opposite to the stub)
 # should be aligned to the y of the platform.
-#
+# Important to remember that the measurements at TCP gives the axis-angle and translation of the TCP frame which has
+# a 'z' pointing outward and the y opposite to the stub
+
+
 def st_from_UR5_tcp_to_object_platform(Rx,Ry,Rz,x,y,z):
 
     first = [-1,0,0]
