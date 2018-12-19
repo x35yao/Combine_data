@@ -39,10 +39,22 @@ class process_result():
                 try:
                     with open(new_file, "w") as f:
                         for line in lines[-3:]:
+                            if "Finger start position" in line:
+                                temp_line = line[25:-1].strip().split(",")
+                                my_list = map(int, temp_line)
+                                my_list[0] -=840
+                                my_list[1] +=840
+                                my_list[2] -= 840
+                                temp_line = str(my_list)
+                        for line in lines[-3:]:
                             if line[0] == 'T':
-                                my_index = line.find("*")+2
-                                f.write(line[my_index:])
-                        f.write(lines[0])
+                                my_index = line.find("*")
+                                if my_index != -1:
+                                    my_index += 2
+                                    f.write(line[my_index:])
+                                else:   # Older data files didnot have the ** Therefore we need to use start info.
+                                    f.write("Fingers at calibration = " + temp_line + "\n")
+                        f.write(lines[2])
                         z = 999
                         f1 = 0
                         line_num = 0

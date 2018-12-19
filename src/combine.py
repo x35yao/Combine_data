@@ -124,9 +124,23 @@ class combine:
                 self.f3.append(finger3)
                 self.f4.append(finger4)
                 self.ndi_time.append(t)
-        f.write(taxonomy)
+
+        tokens = taxonomy.split('**')
+        if len(tokens)!=2:
+            first = tokens[0]
+            last = 'Finger calibration not recorded'
+        else:
+            first, last = tokens
+
+        if 'obs' in first.lower():
+            second = first[-6:].strip()
+            first = first[:-6].strip()
+        else:
+            second = '0 obs'
+        footer = '\n'.join([first, second, last])
+        f.write(footer)
         # Finger start position has an offset of 840
-        f.write("Finger start position = {}".format(map(int,F)))
+        #f.write("Finger start position = {}".format(map(int,F)))
         f.close()
         return 1
 
